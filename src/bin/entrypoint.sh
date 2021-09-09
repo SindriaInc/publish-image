@@ -18,7 +18,7 @@ if [ "${IAC_MODE}" == "standalone" ]; then
 
     # Sync certs if exists
     if [ -d certs ]; then
-        rsync -ra ${BITBUCKET_CLONE_DIR}/certs/ ${BITBUCKET_CLONE_DIR}/src/resources/nginx/certs/
+        rsync -ravP certs/ src/resources/nginx/certs/
     fi
 
     # Build Image
@@ -64,7 +64,7 @@ else
 
     # Sync certs if exists
     if [ -d certs ]; then
-        rsync -ra ${BITBUCKET_CLONE_DIR}/certs/ ${BITBUCKET_CLONE_DIR}/src/resources/nginx/certs/
+        rsync -ravP certs/ src/resources/nginx/certs/
     fi
 
     # Build Image
