@@ -55,12 +55,8 @@ else
 
     # Cloning repo
     echo -e "${BLUE}Cloning repo...${NC}"
-    git clone https://${IAC_GIT_USERNAME}:${IAC_GIT_PASSWORD}@${IAC_GIT_PROVIDER}/${IAC_GIT_NAMESPACE}/${IAC_APP_NAME}.git
-
-    # Checkout version
-    echo -e "${BLUE}Checkout version...${NC}"
+    git clone --branch="${IAC_APP_VERSION}" --depth 50 https://${IAC_GIT_USERNAME}:${IAC_GIT_PASSWORD}@${IAC_GIT_PROVIDER}/${IAC_GIT_NAMESPACE}/${IAC_APP_NAME}.git
     cd ${IAC_APP_NAME}
-    git checkout ${IAC_APP_VERSION}
 
     # Sync certs if exists
     if [ -d certs ]; then
