@@ -39,7 +39,7 @@ RUN dnf -y install dnf-plugins-core && \
     dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo && \
     dnf install docker-ce docker-ce-cli containerd.io -y && \
     usermod -a -G docker ${SINDRIA_USER} && \
-    groupmod -g ${HOST_DOCKER_GROUP_UID} docker && \
+    #groupmod -g ${HOST_DOCKER_GROUP_UID} docker && \
     curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     sudo chmod +x /usr/local/bin/docker-compose && \
     dnf clean all
