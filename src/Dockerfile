@@ -68,6 +68,8 @@ VOLUME ${SINDRIA_USER_HOME}/.local/share/containers
 # instructions and "buildah run".
 ENV BUILDAH_ISOLATION=chroot
 
+WORKDIR ${SINDRIA_USER_HOME}
+
 USER ${SINDRIA_USER}
 
 # Add and setup entrypoint
