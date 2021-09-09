@@ -1,6 +1,6 @@
 # Publish Image
 
-This IaC component permit build SSL/TLS certs with route53 dns.
+This IaC component permit build and publish every docker image.
 
 This is atomic routine for any CI/CD such as gitlab-ci, bitbucket-pipelines etc.
 In any case is possible to use it manually with run.sh helper script.
@@ -11,20 +11,23 @@ List of required envs. This envs will be set on your pipeline variables or in yo
 
 | Key                       | Value                         |
 | --------------------------|:-----------------------------:|
-| AWS_ACCESS_KEY_ID         | <access-key>                  |
-| AWS_SECRET_ACCESS_KEY     | <secret-key>                  |
-| AWS_DEFAULT_REGION        | eu-central-1                  |
+| DOCKERHUB_NAMESPACE       | example                       |
+| DOCKERHUB_USERNAME        | service account username      |
+| DOCKERHUB_PASSWORD        | secret                        |
 | IAC_MODE                  | standalone or void            |
-| IAC_CERTBOT_CACHE         | example-certbot-cache         |
-| IAC_CERTBOT_EMAIL         | devops@example.com            |
-| IAC_CERTBOT_DOMAIN        | example.com                   |
+| IAC_GIT_USERNAME          | service account username      |
+| IAC_GIT_PASSWORD          | secret                        |
+| IAC_GIT_PROVIDER          | provider-fqdn                 |
+| IAC_GIT_NAMESPACE         | repo-namespace                |
+| IAC_APP_NAME              | repo-slug                     |
+| IAC_APP_VERSION           | tag version or branch name    |
 
 
 ## Usage
 
 Paste this command in your pipeline step:
 
-`docker run --rm -t --env IAC_MODE=${IAC_MODE} --env AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} --env AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} --env AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} --env IAC_CERTBOT_CACHE=${IAC_CERTBOT_CACHE} --env IAC_CERTBOT_EMAIL=${IAC_CERTBOT_EMAIL} --env IAC_CERTBOT_DOMAIN=${IAC_CERTBOT_DOMAIN} sindriainc/build-certs-route53:1.0.0`
+`docker run --rm -t --env IAC_MODE=${IAC_MODE} --env DOCKERHUB_NAMESPACE=${DOCKERHUB_NAMESPACE} --env DOCKERHUB_USERNAME=${DOCKERHUB_USERNAME} --env DOCKERHUB_PASSWORD=${DOCKERHUB_PASSWORD} --env IAC_GIT_USERNAME=${IAC_GIT_USERNAME} --env IAC_GIT_PASSWORD=${IAC_GIT_PASSWORD} --env IAC_GIT_PROVIDER=${IAC_GIT_PROVIDER} --env IAC_GIT_NAMESPACE=${IAC_GIT_NAMESPACE} --env IAC_APP_NAME=${IAC_APP_NAME} --env IAC_APP_VERSION=${IAC_APP_VERSION} sindriainc/publish-image:1.0.0`
 
 OR use the helper script:
 
@@ -36,7 +39,7 @@ IMPORTANT: `Remeber to set all envs in your .env file before run.`
 
 For standalone usage you can use certbot cache with volume. Append this to command above:
 
-`-v ./letsencrypt:/etc/letsencrypt`
+`-v ./:/home/sindria/.build`
 
 
 ## Setup Development Environment

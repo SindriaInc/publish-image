@@ -24,7 +24,7 @@ if [ "${IAC_MODE}" == "standalone" ]; then
     # Build Image
     if [ -f build.sh ]; then
         echo -e "${BLUE}Building image...${NC}"
-        bash build.sh ${DOCKERHUB_NAMESPACE}/${BITBUCKET_REPO_SLUG} ${IAC_APP_VERSION}
+        bash build.sh ${DOCKERHUB_NAMESPACE}/${IAC_APP_NAME} ${IAC_APP_VERSION}
     elif [ -f Makefile ]; then
         echo -e "${BLUE}Building image...${NC}"
         make
