@@ -12,35 +12,85 @@ NOW=$(date "+%Y-%m-%d_%H-%M-%S")
 
 if [ "${IAC_MODE}" == "standalone" ]; then
 
-   # Init certbot cache
-   echo -e "${BLUE}Init certbot cache...${NC}"
-   mkdir -p /etc/letsencrypt
+    # Checkout version
+    echo -e "${BLUE}Checkout version...${NC}"
+    git checkout ${IAC_APP_VERSION}
 
-   # Renew existing cert or build
-   echo -e "${BLUE}Building certs...${NC}"
-   certbot renew -n --agree-tos --dns-route53 --dns-route53-propagation-seconds 60 --cert-name ${IAC_CERTBOT_DOMAIN} -m ${IAC_CERTBOT_EMAIL} || certbot certonly -n --agree-tos --dns-route53 --dns-route53-propagation-seconds 60 -d ${IAC_CERTBOT_DOMAIN} -d *.${IAC_CERTBOT_DOMAIN} -m ${IAC_CERTBOT_EMAIL}
+    # Sync certs if exists
+    if [ -d certs ]; then
+        rsync -ra ${BITBUCKET_CLONE_DIR}/certs/ ${BITBUCKET_CLONE_DIR}/src/resources/nginx/certs/
+    fi
+
+    # Build Image
+    if [ -f build.sh ]; then
+        echo -e "${BLUE}Building image...${NC}"
+        bash build.sh ${DOCKERHUB_NAMESPACE}/${BITBUCKET_REPO_SLUG} ${IAC_APP_VERSION}
+    elif [ -f Makefile ]; then
+        echo -e "${BLUE}Building image...${NC}"
+        make
+    else
+      echo -e "${YELLOW}No valid build file found, abort.${NC}"
+      exit 1
+    fi
+
+    # Login into registry
+    echo -e "${BLUE}Login into registry...${NC}"
+    echo ${DOCKERHUB_PASSWORD} | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin
+
+    # Push Image
+    echo -e "${BLUE}Pushing image into registry...${NC}"
+    docker push ${DOCKERHUB_NAMESPACE}/${IAC_APP_NAME}:${IAC_APP_VERSION}
+    docker push ${DOCKERHUB_NAMESPACE}/${IAC_APP_NAME}:latest
+
+    # Cleaning local registry
+    echo -e "${BLUE}Cleaning local registry...${NC}"
+    docker image rm ${DOCKERHUB_NAMESPACE}/${IAC_APP_NAME}:${IAC_APP_VERSION}
+    docker image rm ${DOCKERHUB_NAMESPACE}/${IAC_APP_NAME}:latest
 
 else
+    # Init build workspace
+    echo -e "${BLUE}Init build workspace...${NC}"
+    mkdir -p .build
+    cd .build
 
-  # Init certbot cache
-  echo -e "${BLUE}Init certbot cache...${NC}"
-  mkdir -p /etc/letsencrypt
-  aws s3 sync s3://${IAC_CERTBOT_CACHE} /etc/letsencrypt
+    # Cloning repo
+    echo -e "${BLUE}Cloning repo...${NC}"
+    git clone https://${IAC_GIT_USERNAME}:${IAC_GIT_PASSWORD}@${IAC_GIT_PROVIDER}/${IAC_GIT_NAMESPACE}/${IAC_APP_NAME}.git
 
-  # Cleanup symblinks
-  echo -e "${BLUE}Cleanup symblinks...${NC}"
-  rm -f /etc/letsencrypt/live/${IAC_CERTBOT_DOMAIN}/*.pem || true
-  ln -s /etc/letsencrypt/archive/${IAC_CERTBOT_DOMAIN}/cert*.pem /etc/letsencrypt/live/${IAC_CERTBOT_DOMAIN}/cert.pem || true
-  ln -s /etc/letsencrypt/archive/${IAC_CERTBOT_DOMAIN}/chain*.pem /etc/letsencrypt/live/${IAC_CERTBOT_DOMAIN}/chain.pem || true
-  ln -s /etc/letsencrypt/archive/${IAC_CERTBOT_DOMAIN}/fullchain*.pem /etc/letsencrypt/live/${IAC_CERTBOT_DOMAIN}/fullchain.pem || true
-  ln -s /etc/letsencrypt/archive/${IAC_CERTBOT_DOMAIN}/privkey*.pem /etc/letsencrypt/live/${IAC_CERTBOT_DOMAIN}/privkey.pem || true
+    # Checkout version
+    echo -e "${BLUE}Checkout version...${NC}"
+    cd ${IAC_APP_NAME}
+    git checkout ${IAC_APP_VERSION}
 
-  # Renew existing cert or build
-  echo -e "${BLUE}Building certs...${NC}"
-  certbot renew -n --agree-tos --dns-route53 --dns-route53-propagation-seconds 60 --cert-name ${IAC_CERTBOT_DOMAIN} -m ${IAC_CERTBOT_EMAIL} || certbot certonly -n --agree-tos --dns-route53 --dns-route53-propagation-seconds 60 -d ${IAC_CERTBOT_DOMAIN} -d *.${IAC_CERTBOT_DOMAIN} -m ${IAC_CERTBOT_EMAIL}
+    # Sync certs if exists
+    if [ -d certs ]; then
+        rsync -ra ${BITBUCKET_CLONE_DIR}/certs/ ${BITBUCKET_CLONE_DIR}/src/resources/nginx/certs/
+    fi
 
-  # Update certbot cache
-  echo -e "${BLUE}Updating certbot cache...${NC}"
-  aws s3 sync /etc/letsencrypt s3://${IAC_CERTBOT_CACHE}
+    # Build Image
+    if [ -f build.sh ]; then
+        echo -e "${BLUE}Building image...${NC}"
+        bash build.sh ${DOCKERHUB_NAMESPACE}/${BITBUCKET_REPO_SLUG} ${IAC_APP_VERSION}
+    elif [ -f Makefile ]; then
+        echo -e "${BLUE}Building image...${NC}"
+        make
+    else
+      echo -e "${YELLOW}No valid build file found, abort.${NC}"
+      exit 1
+    fi
+
+    # Login into registry
+    echo -e "${BLUE}Login into registry...${NC}"
+    echo ${DOCKERHUB_PASSWORD} | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin
+
+    # Push Image
+    echo -e "${BLUE}Pushing image into registry...${NC}"
+    docker push ${DOCKERHUB_NAMESPACE}/${IAC_APP_NAME}:${IAC_APP_VERSION}
+    docker push ${DOCKERHUB_NAMESPACE}/${IAC_APP_NAME}:latest
+
+    # Cleaning local registry
+    echo -e "${BLUE}Cleaning local registry...${NC}"
+    docker image rm ${DOCKERHUB_NAMESPACE}/${IAC_APP_NAME}:${IAC_APP_VERSION}
+    docker image rm ${DOCKERHUB_NAMESPACE}/${IAC_APP_NAME}:latest
 fi
 
